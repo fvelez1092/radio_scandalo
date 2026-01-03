@@ -258,11 +258,7 @@ class HomeScreen extends GetView<HomeController> {
                       size: 30,
                     ),
                     onPressed:
-                        () => controller.openWhatsApp(
-                          phone: '0988687865',
-                          message:
-                              'Hola, me gustaría ponerme en contacto con Radio Scandalo.',
-                        ),
+                        () => controller.openWhatsApp(context, '0988687865'),
                   ),
                   const SizedBox(width: 10),
                   IconButton(

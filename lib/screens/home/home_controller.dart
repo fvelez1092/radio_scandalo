@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -55,22 +56,30 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> openWhatsApp({required String phone, String? message}) async {
-    // Formato internacional sin + ni 0 inicial
-    String cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanPhone.startsWith('0')) {
-      cleanPhone = '593${cleanPhone.substring(1)}'; // Ajusta Ecuador
+  Future<void> openWhatsApp(BuildContext context, String phone) async {
+    String numero = phone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // 🇪🇨 Ecuador: 09XXXXXXXX
+    if (numero.startsWith('0')) {
+      numero = '593${numero.substring(1)}';
     }
 
-    final encodedMessage = message != null ? Uri.encodeComponent(message) : '';
-    final uri = Uri.parse(
-      'whatsapp://send?phone=$cleanPhone${encodedMessage.isNotEmpty ? '&text=$encodedMessage' : ''}',
-    );
+    // Validación mínima (593 + 9 dígitos)
+    if (!numero.startsWith('593') || numero.length < 12) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Número de WhatsApp inválido')),
+      );
+      return;
+    }
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error', 'WhatsApp no está instalado o no se puede abrir');
+    final uri = Uri.parse('https://wa.me/$numero');
+
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('WhatsApp no está disponible')),
+      );
     }
   }
 
